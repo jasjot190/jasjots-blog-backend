@@ -15,6 +15,7 @@ const {
   getDocs,
   getDoc,
   addDoc,
+  updateDoc,
   deleteDoc,
   query,
   doc,
@@ -80,16 +81,12 @@ const createMessage = async (name, email, message) => {
 
 const updateMessage = async (id, responded, response) => {
   try {
-    const itemsCollectionRef = doc(db, "messages", id);
+    const docRef = doc(db, "messages", id);
 
-    await setDoc(
-      itemsCollectionRef,
-      {
-        Responded: responded,
-        Response: response,
-      },
-      { merge: true }
-    );
+    await updateDoc(docRef, {
+      Responded: responded,
+      Response: response,
+    });
   } catch (error) {
     console.error("Error updating message: ", error);
     throw error;
@@ -227,9 +224,9 @@ app.post("/addMessage", async (req, res) => {
 });
 
 app.put("/updateMessage", async (req, res) => {
-  let id = req.query.id;
-  responded = req.query.responded;
-  response = req.query.response;
+  let id = req.body.id;
+  let responded = req.body.responded;
+  response = req.body.response;
   await updateMessage(id, responded, response);
   res.send("Message updated");
 });
