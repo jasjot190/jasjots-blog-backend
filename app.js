@@ -46,6 +46,56 @@ const getAllCourses = async () => {
   }
 };
 
+const getAllMessages = async () => {
+  try {
+    let itemsCollectionRef = collection(db, "messages");
+    let itemsSnapshot = await getDocs(itemsCollectionRef);
+    let items = itemsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return items;
+  } catch (error) {
+    console.error("Error fetching Messages: ", error);
+    throw error;
+  }
+};
+
+const createMessage = async (name, email, message) => {
+  try {
+    let itemsCollectionRef = collection(db, "messages");
+    let newItem = {
+      Name: name,
+      Email: email,
+      Message: message,
+      Responded: false,
+      Response: "",
+    };
+    await addDoc(itemsCollectionRef, newItem);
+  } catch (error) {
+    console.error("Error creating message: ", error);
+    throw error;
+  }
+};
+
+const updateMessage = async (id, responded, response) => {
+  try {
+    const itemsCollectionRef = doc(db, "messages", id);
+
+    await setDoc(
+      itemsCollectionRef,
+      {
+        Responded: responded,
+        Response: response,
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("Error updating message: ", error);
+    throw error;
+  }
+};
+
 const getAllLessons = async (courseId) => {
   try {
     let itemsCollectionRef = collection(
@@ -161,6 +211,27 @@ app.post("/addTestimonial", async (req, res) => {
   let desc = req.query.description;
   await createTestimonial(userName, desc);
   res.send("Added to database");
+});
+
+app.get("/messages", async (req, res) => {
+  let recievedItems = await getAllMessages();
+  res.send(recievedItems);
+});
+
+app.post("/addMessage", async (req, res) => {
+  let name = req.body.name;
+  let email = req.body.email;
+  let message = req.body.message;
+  await createMessage(name, email, message);
+  res.send("Message added");
+});
+
+app.put("/updateMessage", async (req, res) => {
+  let id = req.query.id;
+  responded = req.query.responded;
+  response = req.query.response;
+  await updateMessage(id, responded, response);
+  res.send("Message updated");
 });
 
 const start = async () => {
